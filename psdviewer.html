@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSD Viewer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <Style>
+        /* Navbar related */
+        *{
+            list-style: none;
+        }
+        html {
+        scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            padding:0;
+          
+            font-family: Arial, sans-serif;
+        }
+
+        a {
+            color: #ddd;
+            text-decoration: none;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: #333;
+            padding: 20px 20px;
+            position:sticky;
+            top:0px;
+            z-index:1000;
+        }
+
+        .navbar-item {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .navbar-center {
+            display: flex;
+            justify-content: space-evenly;
+            gap: 30px;
+        }
+
+        .nav-link {
+            color: white;
+            font-size: 16px;
+            text-decoration: none;
+            padding: 8px 12px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background-color: #555;
+            border-radius: 4px;
+        }
+
+        .login-icon {
+            color: white;
+            font-size: 26px;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        .login-icon:hover {
+            color: #f39c12;
+            transform: scale(1.2);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        .navbar-menu {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background-color: #333;
+            padding: 10px;
+            width: 200px;
+            height:250px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            flex-direction: column;
+            margin-top:30px;
+        }
+
+        .navbar-menu.active {
+            display: flex;
+        }
+
+        .navbar-menu .nav-link {
+            padding: 10px 15px;
+            color: white;
+            border-bottom: 1px solid #555;
+        }
+
+        .navbar-menu .nav-link:hover {
+            background-color: #555;
+            border-radius: 4px;
+        }
+
+        .login-tooltip {
+            display: none;
+            position: absolute;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #555;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .navbar-item:hover .login-tooltip {
+            display: block;
+        }
+
+        .Logo {
+            color: #fff;
+            font-size: 24px;
+            text-decoration: none;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #f39c12, #e74c3c);
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .mini-logo {
+            font-size: 19px;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        }
+
+        /* psd-preview choosen file */
+        .header {
+            padding: 20px;
+            background-color: #1c1c1c;
+            border-bottom: 1px solid #444;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border-radius: 8px;
+            margin-top:10px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: normal;
+            margin: 0;
+            color: #e0e0e0;
+            
+        }
+
+        .file-input {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-input input[type="file"] {
+            background-color: #333;
+            color: #e0e0e0;
+            padding: 8px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .file-input input[type="file"]::file-selector-button {
+            background-color: #444;
+            color: #e0e0e0;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .file-input input[type="file"]::file-selector-button:hover {
+            background-color: #555;
+        }
+
+        .file-input button {
+            margin-left: 10px;
+            background-color: #0078d7;
+            color: #fff;
+            padding: 13px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .file-input button:hover {
+            background-color: #005bb5;
+        }
+
+        .psd-preview {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #222;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        .psd-preview img {
+            width: 100%;
+            max-width: 600px;
+            max-height: auto;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        #renderedImage {
+            display: none;
+
+            transition: transform 0.3s ease;
+            cursor: zoom-in;
+        }
+
+        #renderedImage.zoomed {
+            transform: scale(2);
+            cursor: zoom-out;
+        }
+
+        #imageContainer {
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .UserFLetter{
+            padding: 10px;
+            border-radius: 50%;
+            background-color: #0078d7;
+            color: #fff;
+            width: 40px;
+            border: 2px solid #fff;
+        }
+        .Show{
+            display: block;
+            position: absolute;
+            z-index: -1;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #fff;
+            color: gray;
+            text-align: center;
+        }
+        .Show ul {
+            /* background-color: #005bb5; */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 0px;
+        }
+        .Show ul li{
+            padding: 10px;
+        }
+        .Show ul li:hover{
+            background-color: #0078d7;
+            color: #fff;
+            
+        }
+        .Hide{
+            display: none;
+        }
+        /* About section */
+        .main-content {
+            padding: 40px 20px;
+            background-color: #1c1c1c;
+            display: flex;
+            justify-content:space-around;
+            margin-top:5px;
+            z-index:1000;
+        }
+
+        .about-section {
+            background: linear-gradient(135deg, #e74c3c, #f39c12);
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            color: #fff;
+        }
+
+        .about-section h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            background: linear-gradient(45deg, #fff, #ff9f00);
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding: 10px;
+        }
+
+        .about-section p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #e0e0e0;
+        }
+
+        .about-features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px;
+            flex: 1 1 calc(33.333% - 20px);
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .feature:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .feature i {
+            font-size: 30px;
+            color: #f39c12;
+            margin-bottom: 10px;
+        }
+
+        .feature h3 {
+            font-size: 20px;
+            margin: 10px 0;
+            color: #fff;
+        }
+
+        .feature p {
+            font-size: 14px;
+            color: #ddd;
+        }
+        /* Rating section */
+        .rating-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+            padding: 40px;
+            max-width: 1200px;
+            margin: auto;
+            z-index:1000;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            animation: cardColorChange 5s ease-in-out infinite alternate;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            animation-play-state: paused;
+        }
+
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .card-body {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            margin-bottom: 10px;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-text {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .rating {
+            color: #ffc107;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .rating .fa-star {
+            margin-right: 5px;
+        }
+        /* About-Us styling */
+        .about-us{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height:auto;
+            overflow: hidden;
+            background: linear-gradient(120deg, #fbc2eb, #a6c0fe);
+            position: relative;
+        }
+
+        .background-bubbles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            opacity: 0.7;
+            animation: bubbleAnimation 10s infinite;
+        }
+
+        .bubble:nth-child(1) { width: 60px; height: 60px; bottom: -100px; left: 20%; animation-duration: 12s; }
+        .bubble:nth-child(2) { width: 80px; height: 80px; bottom: -150px; left: 50%; animation-duration: 15s; }
+        .bubble:nth-child(3) { width: 100px; height: 100px; bottom: -200px; left: 30%; animation-duration: 18s; }
+        .bubble:nth-child(4) { width: 40px; height: 40px; bottom: -50px; left: 70%; animation-duration: 14s; }
+        .bubble:nth-child(5) { width: 70px; height: 70px; bottom: -120px; left: 40%; animation-duration: 16s; }
+
+        @keyframes bubbleAnimation {
+            0% { transform: translateY(0) scale(1); opacity: 0.7; }
+            50% { transform: translateY(-1000px) scale(1.2); opacity: 0.3; }
+            100% { transform: translateY(0) scale(1); opacity: 0.7; }
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: stretch;
+            justify-content: space-around;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .contact-section, .testimonials-section {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            height: 500px; /* Fixed height */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .contact-section {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .testimonials-section {
+            background: linear-gradient(135deg, #f9a8d4, #f38ba0);
+            color: #fff;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .testimonials-section h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            animation: slideInFromTop 1.2s ease-out;
+        }
+
+        .testimonials-slider {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            background: #fff;
+            height: calc(100% - 60px); /* Adjust for space taken by title */
+            width: 100%;
+        }
+
+        .testimonials-slider .slides {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+
+        .testimonials-slider .slide {
+            min-width: 100%;
+            box-sizing: border-box;
+            padding: 20px;
+            text-align: left;
+        }
+
+        .testimonials-slider .slide img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 3px solid #f38ba0;
+            transition: transform 0.3s ease;
+        }
+
+        .testimonials-slider .slide img:hover {
+            transform: scale(1.1);
+        }
+
+        .testimonials-slider .slide p {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .testimonials-slider .slide h3 {
+            font-size: 18px;
+            color: #222;
+            margin-bottom: 5px;
+        }
+
+        .testimonials-slider .slide span {
+            display: block;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .slider-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .slider-controls button {
+            background: rgba(255, 255, 255, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .slider-controls button:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: scale(1.1);
+        }
+
+        .slider-controls button i {
+            font-size: 20px;
+            color: #f38ba0;
+        }
+
+        h2 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 20px;
+            position: relative;
+            animation: slideInFromTop 1.2s ease-out;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .animated-input, .animated-textarea {
+            width: 100%;
+            max-width: 800px;
+            padding: 15px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            color: #333;
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-in-out forwards;
+        }
+
+        .animated-input:focus, .animated-textarea:focus {
+            border-color: #66a6ff;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 10px rgba(102, 166, 255, 0.5);
+        }
+
+        .animated-textarea {
+            height: 120px;
+            resize: none;
+            animation-delay: 0.2s;
+        }
+
+        .animated-button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(90deg, #89f7fe, #66a6ff);
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.4s ease;
+            animation: fadeInUp 1s ease-in-out forwards;
+            animation-delay: 0.3s;
+            overflow: hidden;
+        }
+
+        .animated-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(102, 166, 255, 0.6);
+            background: linear-gradient(90deg, #66a6ff, #89f7fe);
+        }
+
+        .animated-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.5s ease;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+        }
+
+        .animated-button:hover::before {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .social-icons {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            animation: fadeInUp 1s ease-in-out forwards;
+            animation-delay: 0.4s;
+        }
+
+        .social-icons a {
+            font-size: 24px;
+            color: #333;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        .social-icons a:hover {
+            color: #66a6ff;
+            transform: scale(1.2);
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+           
+        }
+
+        @media (max-width: 468px) {
+            
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+       
+        
+            
+        /* Footer Styling */
+        .footer {
+            background-color: #333;
+            color: #fff;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .footer-content {
+            width: 90%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .footer-section {
+            flex: 1;
+            min-width: 200px;
+            margin: 10px;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #f39c12;
+            padding-bottom: 10px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin: 10px 0;
+        }
+
+        .footer-section ul li a {
+            color: #ddd;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section ul li a:hover {
+            color: #f39c12;
+        }
+
+        .footer-bottom {
+        
+            text-align: center;
+            font-size: 17px;
+            font-weight:500;
+            padding:10px;
+            background-color:#555;
+        }
+
+        /* Media Queries */
+        @media (max-width: 768px) {
+            .UserFLetter{
+                display:none;
+            }
+
+            .navbar-center {
+                display: none;
+            }
+            .navbar{
+                display: flex;
+                justify-content: space-between;
+            }
+            .hamburger {
+                display: flex;
+            
+            }
+            .login-icon{
+                display:none;
+            }
+            .hamburger.active span:nth-child(1) {
+                transform: translateY(8px) rotate(45deg);
+                    }
+
+            .hamburger.active span:nth-child(2) {
+                opacity: 0;
+            }
+
+            .hamburger.active span:nth-child(3) {
+                transform: translateY(-8px) rotate(-45deg);
+            }
+
+            .navbar-menu {
+                right: 0px;
+                top: 55px;
+                width:30%;
+                padding:10px;
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .navbar-menu .nav-link {
+                padding: 10px;
+                border-bottom: 1px solid #444;
+            }
+            .psd-preview{
+                display: flex;
+                justify-content: center;
+            }
+            .main-content{
+                flex-direction: column;
+                gap:10px;
+            }
+            .header {
+                padding: 15px;
+            }
+
+            .about-section {
+                padding: 20px;
+            }
+
+            .feature {
+                flex: 1 1 100%;
+                margin: 5px 0;
+            }
+            .container {
+                flex-direction: column;
+                justify-content:center;
+                gap: 20px;
+            }
+
+            .contact-section, .testimonials-section {
+                max-width: 100%;
+                height: auto; /* Allow height to adjust */
+                padding: 15px;
+            }
+
+            .testimonials-section h2 {
+                font-size: 24px;
+                margin-bottom: 15px;
+            }
+
+            .testimonials-slider img {
+                width: 60px;
+                height: 60px;
+            }
+
+            .testimonials-slider .slide p {
+                font-size: 14px;
+            }
+
+            .testimonials-slider .slide h3 {
+                font-size: 16px;
+            }
+
+            .animated-input, .animated-textarea {
+                max-width: 100%;
+                font-size: 14px;
+                padding: 12px;
+            }
+
+            .animated-button {
+                padding: 10px 25px;
+                font-size: 16px;
+            }
+
+            .social-icons {
+                gap: 15px;
+            }
+
+            .social-icons a {
+                font-size: 20px;
+            }
+            
+        }
+
+        @media (max-width: 468px) {
+            .UserFLetter{
+                display:none;
+            }
+            .navbar {
+                position:sticky;
+                top:0px;
+                padding: 25px;
+                z-index:1000;
+             }
+
+            .login-icon {
+                font-size: 22px;
+            }
+            .hamburger {
+                        margin-left: auto;
+                    }
+            .header {
+                font-size: 18px;
+            }
+
+            .about-section h2 {
+                font-size: 22px;
+            }
+
+            .feature {
+                flex: 1 1 100%;
+            }
+            .contact-section, .testimonials-section {
+                width: 100%;
+                height: auto; /* Allow height to adjust */
+                padding: 10px;
+            }
+             
+            .testimonials-section h2 {
+                font-size: 20px;
+                margin-bottom: 10px;
+            }
+
+            .testimonials-slider img {
+                width: 50px;
+                height: 50px;
+            }
+
+            .testimonials-slider .slide p {
+                font-size: 12px;
+            }
+
+            .testimonials-slider .slide h3 {
+                font-size: 14px;
+            }
+
+            .animated-input, .animated-textarea {
+                width: 100%;
+                font-size: 12px;
+                padding: 10px;
+            }
+
+            .animated-button {
+                padding: 8px 20px;
+                font-size: 14px;
+            }
+
+            .social-icons {
+                flex-direction:row;
+                gap: 10px;
+            }
+
+            .social-icons a {
+                font-size: 18px;
+            }
+            
+        }
+        @media (min-width:769px) {
+
+            .main-content{
+                display: flex;
+                gap:15px;
+            }
+        }
+        @keyframes cardColorChange {
+            0% {
+                background-color: #fff;
+            }
+            10%{
+                background-color:rgb(195, 229, 161);
+            }
+            25% {
+                background-color: #f39c12; /* Orange */
+            }
+            50% {
+                background-color: #3498db; /* Blue */
+            }
+            75% {
+                background-color: #9b59b6; /* Purple */
+            }
+            100% {
+                background-color: #e74c3c; /* Red */
+            }
+        }
+    </Style>
+</head>
+
+<body>
+    <!-- Navbar Section-1 -->
+    <nav class="navbar">
+        <div class="navbar-item">
+            <a href="#" class="Logo">PSD <span class="mini-logo">Viewer</span></a>
+        </div>
+        <div class="navbar-center">
+            <a href="#" class="nav-link">Home</a>
+            <a href="#about" class="nav-link">About</a>
+            <a href="#rating" class="nav-link">Features</a>
+            <a href="#about-us" class="nav-link">Contact-us</a>
+          
+        </div>
+        <div class="navbar-item" id="">
+            <div id="LinkDiv">
+                <a href="Login.html" class="login-icon">
+                    <i id="Icon" class="fas fa-sign-in-alt"></i>
+                    <div class="login-tooltip">Login/Signup</div>
+                </a>
+            </div>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        <!-- Add this block for the menu that shows on hamburger click -->
+        <div class="navbar-menu">
+            <a href="#" class="nav-link">Home</a>
+            <a href="#about" class="nav-link">About</a>
+            <a href="#rating" class="nav-link">Features</a>
+            <a href="#about-us" class="nav-link">Contact-us</a>
+            <a href="Login.html" class="nav-link"> <!-- <span id="UserF_Letter" class="UserF_Letter"></span> --><i class="fas fa-sign-in-alt"></i></a>
+        </div>
+    </nav>
+    <!--Section-2 (psd choosen and viewer)  -->
+    <div class="header">
+        <h1>Free Online PSD Viewer</h1>
+        <div class="file-input">
+            <!-- <input type="file" id="fileInput" accept=".psd"> -->
+            <input type="file" id="psdFile" accept=".psd">
+            <button type="button" onclick="uploadPsd()">Upload</button>
+        </div>
+        <div class="psd-preview" id="psdPreview">
+            <!-- PSD preview will be shown here -->
+            <img id="renderedImage"onclick="toggleZoom()" alt="Rendered JPG will appear here">
+        </div>
+    </div>
+   <!-- section-3 (about) -->
+    <div class="main-content" id="about">
+        <section class="about-section">
+            <div class="about-content">
+                <h2>About Our PSD Viewer</h2>
+                <p>Welcome to the ultimate tool for viewing and analyzing PSD files online. Our PSD Viewer offers a seamless, fast, and intuitive experience for designers and developers to inspect Photoshop files without needing to install any software.</p>
+                <div class="about-features">
+                    <div class="feature">
+                        <i class="fas fa-eye"></i>
+                        <h3>Visualize PSD Layers</h3>
+                        <p>Effortlessly view and interact with each layer of your PSD files in real-time.</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-tools"></i>
+                        <h3>Advanced Tools</h3>
+                        <p>Access advanced tools to inspect and analyze PSD files with precision and ease.</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Cloud-Based</h3>
+                        <p>Upload your PSD files securely and access them from anywhere, anytime.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="about-section">
+            <div class="about-content">
+                <h2>How to View PSD Files Online</h2>
+                <p>Follow these simple steps to view your PSD files online with our easy-to-use PSD Viewer:</p>
+                <div class="about-features">
+                    <div class="feature">
+                        <i class="fas fa-upload"></i>
+                        <h3>Step 1: Upload Your File</h3>
+                        <p>Click on the "Choose File" button and select the PSD file you want to view from your device.</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-eye"></i>
+                        <h3>Step 2: View the File</h3>
+                        <p>After uploading, your PSD file will be processed and displayed in the viewer for you to explore.</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-cogs"></i>
+                        <h3>Step 3: Analyze the Layers</h3>
+                        <p>Use our advanced tools to inspect, zoom, and interact with each layer of your PSD file.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- section-4(Rating) -->
+    <div class="rating-section" id="rating">
+        <!-- Card 1 -->
+        <div class="card">
+            <img src="speed.jpg" alt="Speed">
+            <div class="card-body">
+                <h5 class="card-title">Blazing Fast Performance</h5>
+                <div class="rating">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p class="card-text">The Cool PSD Viewer opens large PSD files in seconds, making it perfect for quick previews.</p>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card">
+            <img src="user.jpg" alt="UI">
+            <div class="card-body">
+                <h5 class="card-title">User-Friendly Interface</h5>
+                <div class="rating">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                </div>
+                <p class="card-text">A clean and intuitive UI ensures a seamless experience for both beginners and professionals.</p>
+            </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="card">
+            <img src="compat.jpg" alt="Compatibility">
+            <div class="card-body">
+                <h5 class="card-title">High Compatibility</h5>
+                <div class="rating">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p class="card-text">Supports all major PSD formats, making it versatile and reliable for all your design needs.</p>
+            </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="card">
+            <img src="zoom.jpg" alt="Zoom">
+            <div class="card-body">
+                <h5 class="card-title">Powerful Zoom Features</h5>
+                <div class="rating">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                </div>
+                <p class="card-text">Zoom in and out with precision to inspect the finest details in your PSD files.</p>
+            </div>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="card">
+            <img src="layer.jpg" alt="Layers">
+            <div class="card-body">
+                <h5 class="card-title">Layer Visibility Control</h5>
+                <div class="rating">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p class="card-text">Toggle layer visibility with ease, allowing you to focus on specific parts of your design.</p>
+            </div>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="card">
+            <img src="security.jpg" alt="Security">
+            <div class="card-body">
+                <h5 class="card-title">Secure and Private</h5>
+                <div class="rating">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                </div>
+                <p class="card-text">Your files are processed locally, ensuring your designs remain secure and private.</p>
+            </div>
+        </div>
+
+        <!-- Card 7 -->
+        <div class="card">
+            <img src="custom.jpg" alt="Customization">
+            <div class="card-body">
+                <h5 class="card-title">Customizable Settings</h5>
+                <div class="rating">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p class="card-text">Tailor the viewer to your workflow with adjustable settings and preferences.</p>
+            </div>
+        </div>
+
+        <!-- Card 8 -->
+        <div class="card">
+            <img src="free.jpg" alt="Free">
+            <div class="card-body">
+                <h5 class="card-title">Free and Accessible</h5>
+                <div class="rating">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p class="card-text">The Cool PSD Viewer is available at no cost, making professional-grade tools accessible to everyone.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- section-5(Contact-us) -->
+     <div class="about-us" id="about-us">
+        <div class="background-bubbles">
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+        </div>
+        
+        <div class="container">
+            <div class="contact-section">
+                <h2>Contact Us</h2>
+                <form>
+                    <input type="text" placeholder="Your Name" class="animated-input" />
+                    <input type="email" placeholder="Your Email" class="animated-input" />
+                    <textarea placeholder="Your Message" class="animated-textarea"></textarea>
+                    <button type="submit" class="animated-button">Send Message</button>
+                </form>
+                <div class="social-icons">
+                    <a href="https://facebook.com" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://twitter.com" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="https://instagram.com" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        
+            <div class="testimonials-section">
+                <h2>What Our Users Say</h2>
+                <div class="testimonials-slider">
+                    <div class="slides">
+                        <div class="slide">
+                            <img src="rat-1.webp" alt="User 1">
+                            <h3>John Doe</h3>
+                            <span>Designer</span>
+                            <p>"The PSD viewer is fantastic! It made reviewing my design files so easy and smooth."</p>
+                        </div>
+                        <div class="slide">
+                            <img src="rat-2.jpg" alt="User 2">
+                            <h3>Jane Smith</h3>
+                            <span>Developer</span>
+                            <p>"Incredible tool for anyone who works with PSD files. Highly recommended!"</p>
+                        </div>
+                        <div class="slide">
+                            <img src="rat-3.jpg" alt="User 3">
+                            <h3>Mitchel Johnson</h3>
+                            <span>Photographer</span>
+                            <p>"A game-changer for reviewing and sharing PSD files. So user-friendly!"</p>
+                        </div>
+                        <div class="slide">
+                            <img src="rat-4.jpg" alt="User 4">
+                            <h3>Shane Watson</h3>
+                            <span>Manager</span>
+                            <p>"Unlock the Art within your PSD files-fast,easy and online."</p>
+                        </div>
+                    </div>
+                    <div class="slider-controls">
+                        <button id="prev-slide"><i class="fas fa-chevron-left"></i></button>
+                        <button id="next-slide"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <!-- footer section  -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>About Us</h4>
+                <p>Learn more about our team, our vision, and our mission to provide the best PSD viewer experience.</p>
+                <a href="#">Read More</a>
+            </div>
+            <div class="footer-section">
+                <h4>Services</h4>
+                <ul>
+                    <li><a href="#">PSD Viewing</a></li>
+                    <li><a href="#">Support</a></li>
+                    <li><a href="#">Pricing</a></li>
+                    <li><a href="#about-us">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#rating">Features</a></li>
+                    <li><a href="Login.html">Login</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <p>3-2/4 Main Street,<br>Bengalore,Karnataka,<br>Phone: (123) 456-7890</p>
+            </div>
+        </div>
+    </footer>
+
+    <div class="footer-bottom">
+        <div class="footer-bottom-content">
+            <p>&copy; 2024 PSD Viewer. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/psd.js/3.1.0/psd.min.js"></script>
+    <script>
+        const hamburger = document.querySelector('.hamburger');
+        const navbarMenu = document.querySelector('.navbar-menu');
+        const fileInput = document.getElementById('fileInput');
+        const psdPreview = document.getElementById('psdPreview');
+
+        hamburger.addEventListener('click', () => {
+            navbarMenu.classList.toggle('active');
+             hamburger.classList.toggle('active');
+        });
+
+    </script>
+</body>
+
+</html>
+
+
+<!-- ############################################################################################# -->
+
+    <script>
+        document.getElementById('renderedImage').style.display = "none";
+        function uploadPsd() {
+            const fileInput = document.getElementById('psdFile');
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            axios.post('http://localhost:9999/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                responseType: 'blob' // Expect a binary response
+            })
+                .then(response => {
+                    document.getElementById('renderedImage').style.display = "block";
+
+                    const url = URL.createObjectURL(response.data);
+                    document.getElementById('renderedImage').src = url;
+                })
+                .catch(error => {
+                    console.error('Error uploading file:', error);
+                });
+        }
+        // if(localStorage.getItem('User')){//for meadia query
+        //     document.getElementById("UserF_Letter").innerText = `${localStorage.getItem('User')[0]} `;
+        // }
+        
+        if(localStorage.getItem('User')){
+            document.getElementById("LinkDiv").innerHTML = `<button type='button' onclick="ShowHide()" class='UserFLetter'><abbr tittle='Logout'>${localStorage.getItem('User')[0]}</abbr></button>
+            <div class='Hide' id='listOfOptions'>
+                <ul>
+                    <li onclick="LogOut()">Logout</li>
+                </ul>
+
+                </div>
+            `;
+        }
+        function ShowHide(){
+            if(document.getElementById("listOfOptions").classList == "Hide" ) {
+                document.getElementById("listOfOptions").classList = "Show"
+            }else{
+                document.getElementById("listOfOptions").classList = "Hide";
+            }
+        }
+        function LogOut(){
+            localStorage.clear();
+            window.location.reload();
+        }
+
+        function toggleZoom() {
+            const img = document.getElementById('renderedImage');
+            img.classList.toggle('zoomed');
+        }
+    </script>
+    <script>
+        const slides = document.querySelector('.slides');
+        const prevBtn = document.getElementById('prev-slide');
+        const nextBtn = document.getElementById('next-slide');
+        let index = 0;
+    
+        function showSlide(n) {
+            const totalSlides = document.querySelectorAll('.slide').length;
+            if (n >= totalSlides) index = 0;
+            else if (n < 0) index = totalSlides - 1;
+            else index = n;
+            slides.style.transform = `translateX(-${index * 100}%)`;
+        }
+    
+        nextBtn.addEventListener('click', () => showSlide(index + 1));
+        prevBtn.addEventListener('click', () => showSlide(index - 1));
+    
+        // Auto slide every 5 seconds
+        setInterval(() => showSlide(index + 1), 5000);
+    </script>
